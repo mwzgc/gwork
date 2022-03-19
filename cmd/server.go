@@ -1,7 +1,7 @@
 package main
 
-import chi "mwz.com/chi"
+import gchi "mwz.com/chi"
 
 func main() {
-	chi.Server(3000)
+	gchi.Server(3000)
 }
