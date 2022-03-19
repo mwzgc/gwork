@@ -13,7 +13,7 @@ GO_PATH := $(shell go env | grep GOPATH | awk -F '"' '{print $$2}')
 HTTPSERVER_TEST_PATH := build/test
 
 # Image Name
-IMAGE_NAME?=mwz/gwork
+IMAGE_NAME?=mawenzhong/gwork
 
 # Version
 RELEASE?=v1.0.0
@@ -57,6 +57,12 @@ build_server:
 	${ENABLE_CGO} go build ${GO_BUILD_TAGS} -v -trimpath -ldflags ${GO_LD_FLAGS} \
 	-o ${TARGET_SERVER} ${MKFILE_DIR}cmd/server.go
 
+build_linux_server:
+	@echo "build server"
+	cd ${MKFILE_DIR} && \
+	${ENABLE_CGO} GOOS=linux go build ${GO_BUILD_TAGS} -v -trimpath -ldflags ${GO_LD_FLAGS} \
+	-o ${TARGET_SERVER} ${MKFILE_DIR}cmd/server.go
+
 dev_build_server:
 	@echo "build dev server"
 	cd ${MKFILE_DIR} && \
@@ -86,6 +92,14 @@ start_server:
 	${TARGET_SERVER}
 
 run: dev_build_server start_server
+
+build_docker: build_linux_server
+	docker build -t ${IMAGE_NAME}:${RELEASE} -f ./Dockerfile .
+	docker tag ${IMAGE_NAME}:${RELEASE} ${IMAGE_NAME}:latest
+
+	docker login --username=mawenzhong
+	docker push ${IMAGE_NAME}:latest
+	docker image prune -f
 
 fmt:
 	cd ${MKFILE_DIR} && go fmt ./...
